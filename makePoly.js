@@ -123,7 +123,9 @@ function makeOriginalPath(){
         if (i!=0){
             d = d+ "L "+300*Math.cos(theta)+" "+300*Math.sin(theta)+" ";
         }
-        d = d+ "L "+inRadius*Math.cos(theta2)+" "+inRadius*Math.sin(theta2)+" ";
+        if (eleIn.value != 100){
+            d = d+ "L "+inRadius*Math.cos(theta2)+" "+inRadius*Math.sin(theta2)+" ";
+        }
     }
     d += "z";
     originalPath.setAttribute("d", d);
