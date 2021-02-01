@@ -1,321 +1,72 @@
-<style>
-* {
-	box-sizing: border-box;
-	user-select: none;
-}
-html, body, .app {
-	width: 100vw;
-	height: 100%;
-	margin: 0;
-	padding: 0;
-	font-family: sans-serif;
-	font-weight: 100;
-}
+<!DOCTYPE html>
+<html>
 
-.app {
-	display: flex;
-	flex-direction: row;
-}
+<head>
+  <meta charset="utf-8">
+  <title>makeSomeNoise</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 
-svg {
-	width: 100%;
-	height: 80%;
-}
-
-label {
-	display: flex;
-	font-size: smaller;
-	white-space: nowrap;
-	line-height: 30pt;
-	align-items: center;
-	justify-content: space-around;
-}
-
-input[type="range"] {
-	height: 30pt;
-	display: inline-block;
-	width: 60%;
-}
-
-.app-settings {
-	padding: 10px;
-	background: #eee;
-	overflow: hidden;
-	height: 100%;
-	width: 50%;
-}
-.app-settings-info:after {
-	content: attr(radius)"px";
-	position: absolute;
-	margin-left: 4px;
-}
-
-.corner-points,
-.control-points,
-.path-points {
-	opacity: 0;
-}
-
-#originalPath 
-{
-	opacity: .0;
-}
-
-.show-nots .corner-points,
-.show-nots .control-points,
-.path-points--show .path-points
-{
-	opacity: 0;
-}
-
-.line-type {
-	display: flex;
-	justify-content: center;
-}
-.app-settings-info {
-	margin-right: 40px;
-}
-</style>
-
-<body translate="no" >
+<body translate="no">
   <div class="app">
-	<svg viewBox="-300 -300 600 600">
-<g transform="" id="rotatePath">
-    <path d="M 0 -300 L 300 0 L 0 300 L -300 0 z" fill="orange" opacity=".5" id="originalPath"></path>
-<path d="" id="roundCornerPath" stroke="none" stroke-width="1" fill="#000000"></path>
-		<g class="corner-points"></g>
-		<g class="control-points"></g>
-		<g class="path-points"></g>
-  </g>
-		
-		
-	</svg>
-	<div class="app-settings">
-		<div class="line-type">
-			<label>Line type:&nbsp;&nbsp;</label>
-			<label for="C" title="Cubic line type has more control points than quandratic iine type">
-				<input type="radio" name="lineType" value="C" id="C" checked>
-				&nbsp;Cubic
-			</label>&nbsp;&nbsp;
-			<label for="Q" title="Quandratic line type only have one control point">
-				<input type="radio" name="lineType" value="Q" id="Q">
-				&nbsp;Quadratic
-			</label>
-		</div>
-		<label for="radius">
-			<span class="app-settings-info">radius</span>
-			<input type="range" min="0" max="155" value="22" id="radius">
-		</label>
-	<div style="display:none">
-		<label for="radius2">
-			<span class="app-settings-info app-settings-info--2">2nd border radius</span>
-			<input type="range" min="0" max="155" value="0" id="radius2">
-		</label>
-</div>
-		<label for="rotate">
-			<span class="app-settings-info app-settings-info--2">rotate</span>
-			<input type="range" min="0" max="180" value="90" id="rotate_value">
-		</label>
-
-		<label for="scale">
-			<span class="app-settings-info app-settings-info--2">skew</span>
-			<input type="range" min="0" max="100" value="100" id="skew_value">
-		</label>
-	</div>
-</div>
-    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-157cd5b220a5c80d4ff8e0e70ac069bffd87a61252088146915e8726e5d9f147.js"></script>
-
-  
-      <script id="rendered-js" >
-// Create DOMElement references
-const originalPath = document.getElementById("originalPath"),
-roundCornerPath = document.getElementById("roundCornerPath"),
-RotatePath = document.getElementById("RotatePath"),
-eleRadius = document.getElementById("radius"),
-eleRadius2 = document.getElementById("radius2"),
-eleRotate = document.getElementById("rotate_value"),
-eleSkew = document.getElementById("skew_value"),
-eleLineType = document.querySelector(".line-type"),
-eleRadiusInfo = document.querySelector(".app-settings-info"),
-eleRadiusInfo2 = document.querySelector(".app-settings-info--2"),
-eleAppSettings = document.querySelector(".app-settings"),
-controlPoints = document.querySelector(".control-points"),
-cornerPoints = document.querySelector(".corner-points"),
-pathPoints = document.querySelector(".path-points"),
-svg = document.querySelector("svg"),
-SVGNS = svg.namespaceURI,
-POINT_RADIUS = 6,
-POINT_FILL = 'none';
-
-const sharedAttributes = {
-  stroke: `black`,
-  strokeWidth: `1`,
-  fill: `none` };
-
-let coordinates = [],
-lines = [],
-lineType = "C";
-
-init(originalPath);
-
-addRoundCorners(originalPath);
-eleRadius.addEventListener("input", () => addRoundCorners(originalPath));
-eleRadius2.addEventListener("input", () => addRoundCorners(originalPath));
-eleRotate.addEventListener("input", () => addRoundCorners(originalPath));
-eleSkew.addEventListener("input", () => addRoundCorners(originalPath));
-eleLineType.addEventListener("click", setLineType);
-
-const events = ["touchstart", "touchend", "mouseenter", "mouseleave"];
-events.forEach(evtName => {
-  eleRadius.addEventListener(evtName, toggleShowNots);
-  eleRadius2.addEventListener(evtName, toggleShowNots);
-  svg.addEventListener(evtName, toggleShowPathPoints);
-});
-
-function setLineType() {
-  eleAppSettings.classList.remove(`app-settings--${lineType}`);
-  eleLineType.
-  querySelectorAll("input").
-  forEach(e => lineType = e.checked ? e.id : lineType);
-  eleAppSettings.classList.add(`app-settings--${lineType}`);
-  addRoundCorners(originalPath);
-}
-
-function toggleShowNots() {
-  svg.classList.toggle("show-nots");
-}
-function toggleShowPathPoints() {
-  svg.classList.toggle("path-points--show");
-}
-
-function init(path) {
-  setLineType();
-  coordinates = [];
-  lines = [];
-  // get the points in an array
-  let rawCoordinates = path.
-  getAttribute("d").
-  replace(/[mlz]/gi, "").
-  split(" ").
-  filter(c => c.trim() != "");
-
-  for (let i = 0; i < rawCoordinates.length; i += 2) {if (window.CP.shouldStopExecution(0)) break;
-    const coor = { x: rawCoordinates[i], y: rawCoordinates[i + 1] };
-    coordinates.push(coor);
-    pathPoints.appendChild(getCircle(coor, { r: POINT_RADIUS }));
-  }window.CP.exitedLoop(0);
-
-  const numberOfCoordinates = coordinates.length;
-  let largestRadius = 0;
-  for (let i = 0; i < numberOfCoordinates; i++) {if (window.CP.shouldStopExecution(1)) break;
-    const coorBefore =
-    i === 0 ? coordinates[numberOfCoordinates - 1] : coordinates[i - 1];
-    const coor = coordinates[i];
-    const coorAfter =
-    i === numberOfCoordinates - 1 ? coordinates[0] : coordinates[i + 1];
-
-    //  construct temporary line path (beforLine) going from point to point before current point
-    const lineBefore = getLine(coor, coorBefore);
-
-    //  construct temporary line path (afterLine) going from point to point after current point
-    const lineAfter = getLine(coor, coorAfter);
-
-    // Line between two lines
-    let lineBetween = getLine(coorBefore, coorAfter);
-    let lineBetweenLength = lineBetween.getTotalLength();
-    let middlePoint = lineBetween.getPointAtLength(lineBetweenLength / 2);
-    lineBetween = getLine(coor, middlePoint);
-
-    const maxRadius = parseInt(Math.min(lineBefore.getTotalLength(), lineAfter.getTotalLength()) / 2);
-
-   largestRadius = maxRadius > largestRadius ? maxRadius : largestRadius;
-
-    lines.push({ lineBefore, lineAfter, coor, lineBetween, maxRadius });
-  }window.CP.exitedLoop(1);
-  eleRadius.setAttribute("max", largestRadius);
-  eleRadius2.setAttribute("max", largestRadius);
-
-}
-
-function addRoundCorners(path) {
-  // find radius
-  radius = eleRadius.value;
-  radius2 = eleRadius2.value;
-  eleRadiusInfo.setAttribute("radius", radius);
-  eleRadiusInfo2.setAttribute("radius", radius2);
-
-  // for each point
-  const numberOfCoordinates = coordinates.length;
-  let d = "";
-  cornerPoints.innerHTML = "";
-  for (let i = 0; i < numberOfCoordinates; i++) {if (window.CP.shouldStopExecution(2)) break;
-    let { lineBefore, lineAfter, coor, lineBetween, maxRadius } = lines[i];
-    const minorRadius = Math.min(radius, maxRadius);
-    //const minorRadius2 = Math.min(radius2, maxRadius);
-    const minorRadius2 = Math.min(radius/2, maxRadius);
-    const beforePoint = lineBefore.getPointAtLength(minorRadius);
-    const afterPoint = lineAfter.getPointAtLength(minorRadius);
-    const beforePoint2 = lineBefore.getPointAtLength(minorRadius2);
-    const afterPoint2 = lineAfter.getPointAtLength(minorRadius2);
-
-    coor = lineBetween.getPointAtLength(minorRadius2);
-
-    // generate data to new rounded path
-    switch (lineType) {
-      case "Q":
-        d += `${i === 0 ? "M" : "L"} ${getCoordinates(
-        beforePoint)
-        } ${lineType} ${getCoordinates(coor)} ${getCoordinates(afterPoint)} `;
-        cornerPoints.appendChild(getCircle(coor, { r: POINT_RADIUS }));
-        break;
-      case "C":
-        d += `${i === 0 ? "M" : "L"} ${getCoordinates(
-        beforePoint)
-        } ${lineType} ${getCoordinates(beforePoint2)} ${getCoordinates(
-        afterPoint2)
-        } ${getCoordinates(afterPoint)} `;
-        cornerPoints.appendChild(
-        getCircle(beforePoint2, { r: POINT_RADIUS, fill: POINT_FILL }));
-
-        cornerPoints.appendChild(
-        getCircle(afterPoint2, { r: POINT_RADIUS, fill: POINT_FILL }));
-
-        break;}
+    <svg viewBox="-300 -300 600 600">
+      <g transform="" id="rotatePath">
+        <path d="M 0 -300 L 300 0 L 0 300 L -300 0 z" fill="orange" opacity=".5" id="originalPath"></path>
+        <path d="" id="roundCornerPath" stroke="none" stroke-width="1" fill="#000000"></path>
+        <g class="corner-points"></g>
+        <g class="control-points"></g>
+        <g class="path-points"></g>
+      </g>
 
 
-    cornerPoints.appendChild(getCircle(beforePoint, { r: POINT_RADIUS, fill: POINT_FILL }));
-    cornerPoints.appendChild(getCircle(afterPoint, { r: POINT_RADIUS, fill: POINT_FILL }));
-  }window.CP.exitedLoop(2);
-  roundCornerPath.setAttribute("d", d + " Z");
-  let skew = eleSkew.value / 100;
-  let trans = 400*(1-skew);
- let rot = eleRotate.value - 90;
-  //rotatePath.setAttribute("transform", "rotate(" + rot+ " 0 0) scale("+skew+",1) translate("+trans+")" );
-rotatePath.setAttribute("transform", "rotate(" + rot + " 0 0) scale("+skew+",1)" );
-  console.log(rotatePath);
-}
+    </svg>
+    <div class="app-settings">
+      <div class="line-type">
+        <label>Line type:&nbsp;&nbsp;</label>
+        <label for="C" title="Cubic line type has more control points than quandratic iine type">
+          <input type="radio" name="lineType" value="C" id="C" checked>
+          &nbsp;Cubic
+        </label>&nbsp;&nbsp;
+        <label for="Q" title="Quandratic line type only have one control point">
+          <input type="radio" name="lineType" value="Q" id="Q">
+          &nbsp;Quadratic
+        </label>
+      </div>
+      <label for="radius">
+        <span class="app-settings-info">radius</span>
+        <input type="range" min="0" max="155" value="22" id="radius">
+      </label>
+      <div style="display:none">
+        <label for="radius2">
+          <span class="app-settings-info app-settings-info--2">2nd border radius</span>
+          <input type="range" min="0" max="155" value="0" id="radius2">
+        </label>
+      </div>
+      <label for="rotate">
+        <span class="app-settings-info app-settings-info--2">rotate</span>
+        <input type="range" min="0" max="180" value="90" id="rotate_value">
+      </label>
 
-function getCoordinates(point) {
-  return `${Math.round(point.x)} ${Math.round(point.y)}`;
-}
+      <label for="scale">
+        <span class="app-settings-info app-settings-info--2">skew</span>
+        <input type="range" min="0" max="100" value="100" id="skew_value">
+      </label>
 
-function getLine(coor1, coor2) {
-  const line = getElement("path");
-  line.setAttribute("d", `M ${coor1.x} ${coor1.y} L  ${coor2.x} ${coor2.y}`);
-  return line;
-}
+      <label for="inRadius">
+        <span class="app-settings-info app-settings-info--2">inner Radious</span>
+        <input type="range" min="0" max="100" value="100" id="in_value">
+      </label>
 
-function getCircle(coor, attrs) {
-  const circle = getElement("circle", { cx: coor.x, cy: coor.y, ...attrs });
-  return circle;
-}
-function getElement(tagName, attrs) {
-  const ele = document.createElementNS(SVGNS, tagName);
-  const allAttributes = { ...sharedAttributes, ...attrs };
-  Object.keys(allAttributes).forEach(att => {
-    ele.setAttribute(att, allAttributes[att]);
-  });
-  return ele;
-}
-//# sourceURL=pen.js
-    </script>
+      <label for="apex">
+        <span class="app-settings-info app-settings-info--2">apex</span>
+        <input type="range" min="3" max="20" value="4" id="apex_value">
+      </label>
+
+    </div>
+  </div>
+  <script
+    src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-157cd5b220a5c80d4ff8e0e70ac069bffd87a61252088146915e8726e5d9f147.js"></script>
+  <script type="text/javascript" src="makePoly.js"></script>
+</body>
+
+</html>
