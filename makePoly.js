@@ -127,7 +127,7 @@ function makeOriginalPath(){
     }
     d += "z";
     originalPath.setAttribute("d", d);
-    console.log(originalPath);
+    // console.log(originalPath);
     addRoundCorners(originalPath);
     init(originalPath);
 }
