@@ -173,6 +173,7 @@ function addElement() {
   // console.log("event!");
   // create a new div element
   //<svg viewBox="-300 -300 600 600">
+  newG = document.createElement("g");
   newLine = document.createElement("g");
   //fill="#000000" opacity="1"
 
@@ -185,6 +186,7 @@ function addElement() {
   newPath.setAttribute("class","draggable");
 
   newLine.appendChild(newPath);
+  newG.appendChild(newLine);
 
   let skew = eleSkew.value / 100;
   let scale = eleObjSize.value / 100;
@@ -193,11 +195,11 @@ function addElement() {
   newLine.setAttribute("transform", "rotate(" + rot + " 0 0) scale("+skew*scale+","+scale+")" );
   // console.log(newLine);
 
-  noises.push(newLine);
+  noises.push(newG);
 
   // add the newly created element and its content into the DOM
   var currentDiv = document.getElementById("endPath");
-  currentDiv.parentNode.insertBefore(newLine, currentDiv);
+  currentDiv.parentNode.insertBefore(newG, currentDiv);
   currentDiv.parentNode.innerHTML += "";
 
   makeNoise = document.getElementById("makeNoise");
@@ -397,6 +399,11 @@ function makeDraggable(evt) {
   svg.addEventListener('mousemove', drag);
   svg.addEventListener('mouseup', endDrag);
   svg.addEventListener('mouseleave', endDrag);
+  svg.addEventListener('touchstart', startDrag);
+  svg.addEventListener('touchmove', drag);
+  svg.addEventListener('touchend', endDrag);
+  svg.addEventListener('touchleave', endDrag);
+  svg.addEventListener('touchcancel', endDrag);
   var selectedElement, offset;
   function startDrag(evt) {
     if (evt.target.classList.contains('draggable')) {
@@ -410,15 +417,19 @@ function makeDraggable(evt) {
     if (selectedElement) {
       evt.preventDefault();
       var coord = getMousePosition(evt);
-      selectedG = selectedElement.parentNode;
-      t = selectedG.getAttribute("transform");
-      n = t.indexOf(" translate");
-      if (n!=-1){
-        t = t.substring(0,n);
-      }
-      t += " translate("+coord.x*3+","+coord.y*3+")";
+      selectedG = selectedElement.parentNode.parentNode;
+      
+      // t_size = selectedG.getAttribute("transform");
+      // t_size = t_size.split(" ")[3].split(",")[1].slice(0,-1);
+
+      // t = selectedG.getAttribute("transform");
+      // n = t.indexOf(" translate");
+      // if (n!=-1){
+      //   t = t.substring(0,n);
+      // }
+      t = " translate("+coord.x+","+coord.y+")";
       selectedG.setAttribute("transform", t);
-      // console.log(selectedG);
+      console.log(selectedG);
     }
   }
   function endDrag(evt) {
@@ -428,6 +439,7 @@ function makeDraggable(evt) {
 
 function getMousePosition(evt) {
   var CTM = svg.getScreenCTM();
+  if (evt.touches) { evt = evt.touches[0]; }
   return {
     x: (evt.clientX - CTM.e) / CTM.a,
     y: (evt.clientY - CTM.f) / CTM.d
