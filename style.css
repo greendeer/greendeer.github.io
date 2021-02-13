@@ -18,7 +18,9 @@ html, body, .app {
 }
 
 .but{
+	margin : auto;
 	padding:10px;
+	width:60%;
 }
 
 .makeObj{
@@ -52,6 +54,8 @@ label {
 	white-space: nowrap;
 	align-items: center;
 	justify-content: space-around;
+	padding-top:10px;
+	padding-bottom: 10px;
 }
 
 input[type="range"] {
