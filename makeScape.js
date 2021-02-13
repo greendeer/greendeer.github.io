@@ -1,10 +1,10 @@
 originalPath = document.getElementById("originalPath"),
-roundCornerPath = document.getElementById("roundCornerPath"),
-RotatePath = document.getElementById("RotatePath"),
-eleRadius = document.getElementById("radius"),
-eleRadius2 = document.getElementById("radius2"),
-eleRotate = document.getElementById("rotate_value"),
-eleSkew = document.getElementById("skew_value"),
+leftPath = document.getElementById("leftPath"),
+rightPath = document.getElementById("rightPath"),
+eleSize = document.getElementById("size"),
+eleOpacity = document.getElementById("opacity"),
+eleHorizon = document.getElementById("horizon"),
+eleVertical = document.getElementById("vertical"),
 eleIn = document.getElementById("in_value"),
 eleApex = document.getElementById("apex_value"),
 eleLineType = document.querySelector(".line-type"),
@@ -28,23 +28,22 @@ let coordinates = [],
 lines = [],
 lineType = "C";
 
-makeOriginalPath();
-init(originalPath);
+makeRectangle();
 
-eleRadius.addEventListener("input", () => init(originalPath));
-eleRadius2.addEventListener("input", () => init(originalPath));
-eleRotate.addEventListener("input", () => init(originalPath));
-eleSkew.addEventListener("input", () => init(originalPath));
-eleIn.addEventListener("input", () => makeOriginalPath());
-eleApex.addEventListener("input", () => makeOriginalPath());
+eleSize.addEventListener("input", () => makeRectangle());
+eleOpacity.addEventListener("input", () => makeRectangle());
+eleHorizon.addEventListener("input", () => makeRectangle());
+eleVertical.addEventListener("input", () => makeRectangle());
+eleIn.addEventListener("input", () => makeRectangle());
+eleApex.addEventListener("input", () => makeRectangle());
 eleLineType.addEventListener("click", setLineType);
 
-const events = ["touchstart", "touchend", "mouseenter", "mouseleave"];
-events.forEach(evtName => {
-  eleRadius.addEventListener(evtName, toggleShowNots);
-  eleRadius2.addEventListener(evtName, toggleShowNots);
-  svg.addEventListener(evtName, toggleShowPathPoints);
-});
+// const events = ["touchstart", "touchend", "mouseenter", "mouseleave"];
+// events.forEach(evtName => {
+//   eleRadius.addEventListener(evtName, toggleShowNots);
+//   eleRadius2.addEventListener(evtName, toggleShowNots);
+//   svg.addEventListener(evtName, toggleShowPathPoints);
+// });
 
 function setLineType() {
   eleAppSettings.classList.remove(`app-settings--${lineType}`);
@@ -108,8 +107,6 @@ function init(path) {
   }window.CP.exitedLoop(1);
   eleRadius.setAttribute("max", largestRadius);
   eleRadius2.setAttribute("max", largestRadius);
-
-  addRoundCorners(originalPath);
 }
 
 function makeOriginalPath(){
@@ -132,6 +129,49 @@ function makeOriginalPath(){
     // console.log(originalPath);
     addRoundCorners(originalPath);
     init(originalPath);
+}
+
+function makeRectangle(){
+    size = eleSize.value*6;
+    min_transform = 300 - size/2;
+    horizon = (eleHorizon.value - 50)/50*min_transform;
+    vertical = (eleVertical.value - 50)/50*min_transform;
+    coordinates[0] = [horizon+-1*size/2, vertical+-1*size/2];
+    coordinates[1] = [horizon+size/2,vertical+-1*size/2];
+    coordinates[2] = [horizon+size/2,vertical+size/2];
+    coordinates[3] = [horizon+-size/2,vertical+size/2];
+    d = "M -300 -300 ";
+    d += "L "+coordinates[0][0]+" "+coordinates[0][1]+" ";
+    d += "L "+coordinates[1][0]+" "+coordinates[1][1]+" ";
+    d += "L 300 -300 L 300 300 ";
+    d += "L "+coordinates[2][0]+" "+coordinates[2][1]+" ";
+    d += "L "+coordinates[3][0]+" "+coordinates[3][1]+" ";
+    d += "L -300 300 ";
+    // for(let i = 1;i<4;i++){
+    //   d += "L "+coordinates[i][0]+" "+coordinates[i][1]+" ";
+    // }
+    d += "z";
+    originalPath.setAttribute("d", d);
+    changeOpacity();
+    // console.log(originalPath);
+}
+
+function makeLeftPath(){
+  d = "M -300 -300 ";
+  d += "L "+coordinates[0][0]+" "+coordinates[0][1]+" ";
+  d += "L "+coordinates[3][0]+" "+coordinates[3][1]+" ";
+  d += "L -300 300 ";
+  d += "z";
+  leftPath.setAttribute("d", d);
+}
+
+function makeRightPath(){
+  d = "M 300 -300 ";
+  d += "L "+coordinates[1][0]+" "+coordinates[1][1]+" ";
+  d += "L "+coordinates[2][0]+" "+coordinates[2][1]+" ";
+  d += "L 300 300 ";
+  d += "z";
+  rightPath.setAttribute("d", d);
 }
 
 function addRoundCorners(path) {
@@ -191,6 +231,12 @@ function addRoundCorners(path) {
   //rotatePath.setAttribute("transform", "rotate(" + rot+ " 0 0) scale("+skew+",1) translate("+trans+")" );
 rotatePath.setAttribute("transform", "rotate(" + rot + " 0 0) scale("+skew+",1)" );
 //   console.log(rotatePath);
+}
+
+function changeOpacity(){
+  opa = eleOpacity.value/100;
+  originalPath.setAttribute("opacity",opa);
+  // console.log(originalPath);
 }
 
 function getCoordinates(point) {

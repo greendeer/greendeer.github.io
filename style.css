@@ -12,13 +12,23 @@ html, body, .app {
 }
 
 .app {
-	display: flex;
+	display: block;
 	flex-direction: row;
+	text-align: center;
+}
+
+.makeObj{
+	position: absolute;
+	width:100%;
+	height:100%;
+	top:0;
+	left:0;
+	background : #aaa;
 }
 
 svg {
-	width: 100%;
-	height: 80%;
+	height: 50%;
+	margin-bottom : 10px;
 }
 
 label {
@@ -37,11 +47,10 @@ input[type="range"] {
 }
 
 .app-settings {
-	padding: 10px;
+	padding : 30px;
 	background: #eee;
 	overflow: hidden;
-	height: 100%;
-	width: 50%;
+	width: 100%;
 }
 .app-settings-info:after {
 	content: attr(radius)"px";
@@ -57,7 +66,7 @@ input[type="range"] {
 
 #originalPath 
 {
-	opacity: 0;
+	/* opacity: 0; */
 }
 
 .show-nots .corner-points,
