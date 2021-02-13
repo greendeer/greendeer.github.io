@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>makeSomeNoise</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body translate="no">
+  <div class="app">
+    <svg viewBox="-300 -300 600 600">
+      <defs>
+        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:rgb(0,0,0);stop-opacity:1" />
+          <stop offset="100%" style="stop-color:rgb(155,155,155);stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <g transform="" id="rotatePath">
+        <path d="M 0 -300 L 300 0 L 0 300 L -300 0 z" fill="orange" opacity="0" id="originalPath"></path>
+        <path d="" id="roundCornerPath" stroke="none" stroke-width="1" fill="url(#grad2)"></path>
+        <g class="corner-points"></g>
+        <g class="control-points"></g>
+        <g class="path-points"></g>
+      </g>
+
+
+    </svg>
+    <div class="app-settings">
+      <div class="line-type">
+        <label>Line type:&nbsp;&nbsp;</label>
+        <label for="C" title="Cubic line type has more control points than quandratic iine type">
+          <input type="radio" name="lineType" value="C" id="C" checked>
+          &nbsp;Cubic
+        </label>&nbsp;&nbsp;
+        <label for="Q" title="Quandratic line type only have one control point">
+          <input type="radio" name="lineType" value="Q" id="Q">
+          &nbsp;Quadratic
+        </label>
+      </div>
+      <label for="radius">
+        <span class="app-settings-info">radius</span>
+        <input type="range" min="0" max="155" value="22" id="radius">
+      </label>
+      <div style="display:none">
+        <label for="radius2">
+          <span class="app-settings-info app-settings-info--2">2nd border radius</span>
+          <input type="range" min="0" max="155" value="0" id="radius2">
+        </label>
+      </div>
+      <label for="rotate">
+        <span class="app-settings-info app-settings-info--2">rotate</span>
+        <input type="range" min="0" max="180" value="90" id="rotate_value">
+      </label>
+
+      <label for="scale">
+        <span class="app-settings-info app-settings-info--2">skew</span>
+        <input type="range" min="0" max="100" value="100" id="skew_value">
+      </label>
+
+      <label for="inRadius">
+        <span class="app-settings-info app-settings-info--2">inner Radious</span>
+        <input type="range" min="0" max="100" value="100" id="in_value">
+      </label>
+
+      <label for="apex">
+        <span class="app-settings-info app-settings-info--2">apex</span>
+        <input type="range" min="3" max="20" value="4" id="apex_value">
+      </label>
+
+    </div>
+  </div>
+  <script
+    src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-157cd5b220a5c80d4ff8e0e70ac069bffd87a61252088146915e8726e5d9f147.js"></script>
+  <script type="text/javascript" src="makePoly.js"></script>
+</body>
+
+</html>

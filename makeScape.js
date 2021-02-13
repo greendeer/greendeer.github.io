@@ -1,7 +1,14 @@
 originalPath = document.getElementById("originalPath"),
+roundCornerPath = document.getElementById("roundCornerPath"),
+RotatePath = document.getElementById("RotatePath"),
 leftPath = document.getElementById("leftPath"),
 rightPath = document.getElementById("rightPath"),
+eleRadius = document.getElementById("radius"),
+eleRadius2 = document.getElementById("radius2"),
+eleRotate = document.getElementById("rotate_value"),
+eleSkew = document.getElementById("skew_value"),
 eleSize = document.getElementById("size"),
+eleObjSize = document.getElementById("objSize"),
 eleOpacity = document.getElementById("opacity"),
 eleHorizon = document.getElementById("horizon"),
 eleVertical = document.getElementById("vertical"),
@@ -11,6 +18,8 @@ eleLineType = document.querySelector(".line-type"),
 eleRadiusInfo = document.querySelector(".app-settings-info"),
 eleRadiusInfo2 = document.querySelector(".app-settings-info--2"),
 eleAppSettings = document.querySelector(".app-settings"),
+eleButton = document.getElementById("but1");
+eleButton2 = document.getElementById("but2");
 controlPoints = document.querySelector(".control-points"),
 cornerPoints = document.querySelector(".corner-points"),
 pathPoints = document.querySelector(".path-points"),
@@ -27,6 +36,9 @@ const sharedAttributes = {
 let coordinates = [],
 lines = [],
 lineType = "C";
+noises = [];
+
+var selectedElement = false;
 
 makeRectangle();
 
@@ -36,7 +48,9 @@ eleHorizon.addEventListener("input", () => makeRectangle());
 eleVertical.addEventListener("input", () => makeRectangle());
 eleIn.addEventListener("input", () => makeRectangle());
 eleApex.addEventListener("input", () => makeRectangle());
-eleLineType.addEventListener("click", setLineType);
+// eleLineType.addEventListener("click", setLineType);
+eleButton.addEventListener("click", addElement);
+eleButton2.addEventListener("click", openMakeObj);
 
 // const events = ["touchstart", "touchend", "mouseenter", "mouseleave"];
 // events.forEach(evtName => {
@@ -51,7 +65,7 @@ function setLineType() {
   querySelectorAll("input").
   forEach(e => lineType = e.checked ? e.id : lineType);
   eleAppSettings.classList.add(`app-settings--${lineType}`);
-  addRoundCorners(originalPath);
+  // addRoundCorners(originalPath);
 }
 
 function toggleShowNots() {
@@ -131,6 +145,65 @@ function makeOriginalPath(){
     init(originalPath);
 }
 
+function makeApex(){
+  apex = eleApex.value;
+  d = "M 300 0 "
+  deg = 2*Math.PI/apex;
+  inRadius = eleIn.value / 100 * (300*Math.cos(deg/2));
+  for(let i=0; i<apex;i++){
+      theta = deg*i;
+      theta2 = theta + deg/2;
+      if (i!=0){
+          d = d+ "L "+300*Math.cos(theta)+" "+300*Math.sin(theta)+" ";
+      }
+      if (eleIn.value != 100){
+          d = d+ "L "+inRadius*Math.cos(theta2)+" "+inRadius*Math.sin(theta2)+" ";
+      }
+  }
+  d += "z";
+  return d;
+}
+
+function openMakeObj(){
+  makeNoise = document.getElementById("makeNoise");
+  makeNoise.hidden = false;
+}
+
+function addElement() {
+  // console.log("event!");
+  // create a new div element
+  //<svg viewBox="-300 -300 600 600">
+  newLine = document.createElement("g");
+  //fill="#000000" opacity="1"
+
+  newPath = document.createElement("path");
+  newPath.setAttribute("fill", "#000000");
+  newPath.setAttribute("opacity", "1");
+  newPath.setAttribute("d", makeApex());
+  init(newPath);
+  newPath.setAttribute("d", addRoundCorners2(newPath));
+  newPath.setAttribute("class","draggable");
+
+  newLine.appendChild(newPath);
+
+  let skew = eleSkew.value / 100;
+  let scale = eleObjSize.value / 100;
+  let rot = eleRotate.value - 90;
+  //rotatePath.setAttribute("transform", "rotate(" + rot+ " 0 0) scale("+skew+",1) translate("+trans+")" );
+  newLine.setAttribute("transform", "rotate(" + rot + " 0 0) scale("+skew*scale+","+scale+")" );
+  // console.log(newLine);
+
+  noises.push(newLine);
+
+  // add the newly created element and its content into the DOM
+  var currentDiv = document.getElementById("rotatePath");
+  currentDiv.parentNode.insertBefore(newLine, currentDiv);
+  currentDiv.parentNode.innerHTML += "";
+
+  makeNoise = document.getElementById("makeNoise");
+  makeNoise.hidden = true;
+}
+
 function makeRectangle(){
     size = eleSize.value*6;
     min_transform = 300 - size/2;
@@ -151,9 +224,10 @@ function makeRectangle(){
     //   d += "L "+coordinates[i][0]+" "+coordinates[i][1]+" ";
     // }
     d += "z";
+    originalPath = document.getElementById("originalPath");
     originalPath.setAttribute("d", d);
     changeOpacity();
-    // console.log(originalPath);
+    originalPath.parentNode.innerHTML += "";
 }
 
 function makeLeftPath(){
@@ -172,6 +246,61 @@ function makeRightPath(){
   d += "L 300 300 ";
   d += "z";
   rightPath.setAttribute("d", d);
+}
+
+function addRoundCorners2(path) {
+  // find radius
+  radius = eleRadius.value;
+  radius2 = eleRadius2.value;
+  eleRadiusInfo.setAttribute("radius", radius);
+  eleRadiusInfo2.setAttribute("radius", radius2);
+
+  // for each point
+  const numberOfCoordinates = coordinates.length;
+  let d = "";
+  cornerPoints.innerHTML = "";
+  for (let i = 0; i < numberOfCoordinates; i++) {if (window.CP.shouldStopExecution(2)) break;
+    let { lineBefore, lineAfter, coor, lineBetween, maxRadius } = lines[i];
+    const minorRadius = Math.min(radius, maxRadius);
+    //const minorRadius2 = Math.min(radius2, maxRadius);
+    const minorRadius2 = Math.min(radius/2, maxRadius);
+    const beforePoint = lineBefore.getPointAtLength(minorRadius);
+    const afterPoint = lineAfter.getPointAtLength(minorRadius);
+    const beforePoint2 = lineBefore.getPointAtLength(minorRadius2);
+    const afterPoint2 = lineAfter.getPointAtLength(minorRadius2);
+
+    coor = lineBetween.getPointAtLength(minorRadius2);
+
+    // generate data to new rounded path
+    switch (lineType) {
+      case "Q":
+        d += `${i === 0 ? "M" : "L"} ${getCoordinates(
+        beforePoint)
+        } ${lineType} ${getCoordinates(coor)} ${getCoordinates(afterPoint)} `;
+        cornerPoints.appendChild(getCircle(coor, { r: POINT_RADIUS }));
+        break;
+      case "C":
+        d += `${i === 0 ? "M" : "L"} ${getCoordinates(
+        beforePoint)
+        } ${lineType} ${getCoordinates(beforePoint2)} ${getCoordinates(
+        afterPoint2)
+        } ${getCoordinates(afterPoint)} `;
+        cornerPoints.appendChild(
+        getCircle(beforePoint2, { r: POINT_RADIUS, fill: POINT_FILL }));
+
+        cornerPoints.appendChild(
+        getCircle(afterPoint2, { r: POINT_RADIUS, fill: POINT_FILL }));
+
+        break;}
+
+
+    cornerPoints.appendChild(getCircle(beforePoint, { r: POINT_RADIUS, fill: POINT_FILL }));
+    cornerPoints.appendChild(getCircle(afterPoint, { r: POINT_RADIUS, fill: POINT_FILL }));
+  }window.CP.exitedLoop(2);
+  d += "Z";
+  return d;
+  roundCornerPath.setAttribute("d", d);
+  
 }
 
 function addRoundCorners(path) {
@@ -260,4 +389,30 @@ function getElement(tagName, attrs) {
     ele.setAttribute(att, allAttributes[att]);
   });
   return ele;
+}
+
+function makeDraggable(evt) {
+  var svg = evt.target;
+  svg.addEventListener('mousedown', startDrag);
+  svg.addEventListener('mousemove', drag);
+  svg.addEventListener('mouseup', endDrag);
+  svg.addEventListener('mouseleave', endDrag);
+  function startDrag(evt) {
+    console.log("event!");
+    if (evt.target.classList.contains('draggable')) {
+      selectedElement = evt.target;
+    }
+  }
+  function drag(evt) {
+    if (selectedElement) {
+      evt.preventDefault();
+      var dragX = evt.clientX;
+      var dragY = evt.clientY;
+      selectedElement.setAttributeNS(null, "x", dragX);
+      selectedElement.setAttributeNS(null, "y", dragY);
+    }
+  }
+  function endDrag(evt) {
+    selectedElement = null;
+  }
 }
