@@ -429,7 +429,7 @@ function makeDraggable(evt) {
       // }
       t = " translate("+coord.x+","+coord.y+")";
       selectedG.setAttribute("transform", t);
-      console.log(selectedG);
+      // console.log(selectedG);
     }
   }
   function endDrag(evt) {
