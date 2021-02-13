@@ -196,7 +196,7 @@ function addElement() {
   noises.push(newLine);
 
   // add the newly created element and its content into the DOM
-  var currentDiv = document.getElementById("rotatePath");
+  var currentDiv = document.getElementById("endPath");
   currentDiv.parentNode.insertBefore(newLine, currentDiv);
   currentDiv.parentNode.innerHTML += "";
 
@@ -397,22 +397,39 @@ function makeDraggable(evt) {
   svg.addEventListener('mousemove', drag);
   svg.addEventListener('mouseup', endDrag);
   svg.addEventListener('mouseleave', endDrag);
+  var selectedElement, offset;
   function startDrag(evt) {
-    console.log("event!");
     if (evt.target.classList.contains('draggable')) {
       selectedElement = evt.target;
+      offset = getMousePosition(evt);
+      offset.x -= parseFloat(selectedElement.getAttributeNS(null, "x"));
+      offset.y -= parseFloat(selectedElement.getAttributeNS(null, "y"));
     }
   }
   function drag(evt) {
     if (selectedElement) {
       evt.preventDefault();
-      var dragX = evt.clientX;
-      var dragY = evt.clientY;
-      selectedElement.setAttributeNS(null, "x", dragX);
-      selectedElement.setAttributeNS(null, "y", dragY);
+      var coord = getMousePosition(evt);
+      selectedG = selectedElement.parentNode;
+      t = selectedG.getAttribute("transform");
+      n = t.indexOf(" translate");
+      if (n!=-1){
+        t = t.substring(0,n);
+      }
+      t += " translate("+coord.x*3+","+coord.y*3+")";
+      selectedG.setAttribute("transform", t);
+      // console.log(selectedG);
     }
   }
   function endDrag(evt) {
     selectedElement = null;
   }
+}
+
+function getMousePosition(evt) {
+  var CTM = svg.getScreenCTM();
+  return {
+    x: (evt.clientX - CTM.e) / CTM.a,
+    y: (evt.clientY - CTM.f) / CTM.d
+  };
 }

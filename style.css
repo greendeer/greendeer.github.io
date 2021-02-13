@@ -77,10 +77,6 @@ input[type="range"] {
 	opacity: 0;
 }
 
-#originalPath 
-{
-	/* opacity: 0; */
-}
 
 .show-nots .corner-points,
 .show-nots .control-points,
